@@ -1,7 +1,7 @@
 {
   "name": "heyyumi",
   "version": "0.1.1",
-  "description": "Find and book real Korean restaurants from your AI agent — no Korean needed. CLI for HeyYumi (search, details, table requests).",
+  "description": "Your AI finds and books real Korean restaurants, no Korean needed. 543,000+ verified venues; search, details and table requests as JSON for any agent.",
   "license": "MIT",
   "bin": {
     "heyyumi": "bin/heyyumi.js"
@@ -27,15 +27,22 @@
   "keywords": [
     "heyyumi",
     "korea",
+    "korean-food",
+    "k-food",
+    "seoul",
     "restaurant",
     "reservation",
-    "k-food",
+    "booking",
+    "travel",
     "ai-agent",
+    "llm",
     "mcp",
     "cli",
     "agent-skills",
     "claude-code",
-    "codex"
+    "codex",
+    "gemini-cli",
+    "cursor"
   ],
   "publishConfig": {
     "access": "public"
