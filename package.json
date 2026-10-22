@@ -1,0 +1,44 @@
+{
+  "name": "heyyumi",
+  "version": "0.1.0",
+  "description": "Find and book real Korean restaurants from your AI agent — no Korean needed. CLI for HeyYumi (search, details, table requests).",
+  "license": "MIT",
+  "bin": {
+    "heyyumi": "bin/heyyumi.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "lint": "node --check bin/heyyumi.js && for f in src/*.js test/*.js; do node --check \"$f\" || exit 1; done",
+    "test": "node --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hmp-dev/heyyumi-cli.git"
+  },
+  "homepage": "https://heyyumi.ai",
+  "keywords": [
+    "heyyumi",
+    "korea",
+    "restaurant",
+    "reservation",
+    "k-food",
+    "ai-agent",
+    "mcp",
+    "cli",
+    "k-skill"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/hmp-dev/heyyumi-cli/issues"
+  }
+}
