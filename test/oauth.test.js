@@ -66,7 +66,7 @@ test("login completes through the loopback redirect with PKCE and saves credenti
   try {
     const creds = await login({
       issuer,
-      clientName: "k-skill",
+      clientName: "My Agent",
       log: () => {},
       browser: (u) => fetch(u).catch(() => {}),
     });
@@ -76,7 +76,7 @@ test("login completes through the loopback redirect with PKCE and saves credenti
     assert.match(state.redirectUri, /^http:\/\/127\.0\.0\.1:\d+\/callback$/);
     const saved = readCredentials();
     assert.equal(saved.refreshToken, "r1");
-    assert.equal(saved.clientName, "k-skill");
+    assert.equal(saved.clientName, "My Agent");
   } finally {
     server.close();
   }

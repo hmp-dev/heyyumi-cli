@@ -1,8 +1,0 @@
-{
-  "name": "heyyumi-restaurant",
-  "description": "헤이유미(HeyYumi) CLI로 한국 맛집·카페·술집을 찾고, 상세를 보고, 예약 요청까지 보낸다. 지역·역·메뉴·영업 시각·주차·비건 같은 조건 검색과 '지금 웨이팅 있나요' 실시간 문의를 지원한다.",
-  "profiles": [
-    "action:booking"
-  ],
-  "frontmatter": "name: heyyumi-restaurant\ndescription: 헤이유미(HeyYumi) CLI로 한국 맛집·카페·술집을 찾고, 상세를 보고, 예약 요청까지 보낸다. 지역·역·메뉴·영업 시각·주차·비건 같은 조건 검색과 '지금 웨이팅 있나요' 실시간 문의를 지원한다.\nlicense: MIT\nmetadata:\n  category: food\n  locale: ko-KR\n  phase: v1"
-}

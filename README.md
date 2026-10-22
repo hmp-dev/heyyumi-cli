@@ -4,7 +4,7 @@
 
 Your AI finds and books real Korean restaurants, no Korean needed.
 
-`heyyumi` is the command-line client for [HeyYumi](https://heyyumi.ai): verified data on 540,000+ restaurants, cafes, bakeries and bars across Korea, plus table requests that the venue answers within 5 minutes. It is built for AI agents (Claude Code, Codex, Cursor, k-skill …) that run shell commands and read JSON.
+`heyyumi` is the command-line client for [HeyYumi](https://heyyumi.ai): verified data on 540,000+ restaurants, cafes, bakeries and bars across Korea, plus table requests that the venue answers within 5 minutes. It is built for any AI agent that runs shell commands and reads JSON (Claude Code, Codex, Gemini CLI, Cursor, or your own scripts).
 
 ```bash
 npx -y heyyumi login                                   # once: Google sign-in in the browser, then done
@@ -23,7 +23,7 @@ Requires Node.js 18+. No other dependencies.
 - Each sign-in gets its own HeyYumi key on the user's account, so usage is metered per user.
 - Credentials are saved to `~/.config/heyyumi/credentials.json` (mode 0600; `%APPDATA%\heyyumi` on Windows). Access tokens refresh on their own; refresh is locked across processes so parallel agent commands never sign the user out.
 - `heyyumi status` shows whether you are signed in (never prints tokens). `heyyumi logout` removes local credentials. Keys can be revoked any time at <https://heyyumi.ai/dashboard>.
-- `--no-browser` prints the URL instead of opening it. `--client-name NAME` labels the connection (it shows up as the source of reservation requests, e.g. `--client-name k-skill`).
+- `--no-browser` prints the URL instead of opening it. `--client-name NAME` labels the connection (it shows up as the source of reservation requests, e.g. `--client-name "My Agent"`).
 - Already have a dashboard key? Set `HEYYUMI_API_KEY=hmp_...` and skip `login`.
 
 ## Commands
@@ -59,16 +59,16 @@ Flags may use dashes or underscores (`--page-size` = `--page_size`). Bare flags 
 - There are no star ratings (`rating` is always null). Do not invent one, and do not attribute review counts to any map platform.
 - Link venue names to their `placeUrl`.
 
-## For k-skill
+## Use it as an agent skill
 
-A k-skill skill can call this CLI the same way `bunjang-search` calls `bunjang-cli`:
+Any agent or skill system that can run a shell command can wrap this CLI:
 
 ```bash
-npx -y heyyumi login --client-name k-skill   # returns at once if already signed in
+npx -y heyyumi login --client-name "My Agent"   # returns at once if already signed in
 npx -y heyyumi search "<dish or venue>" --region "<area>" --page-size 5
 ```
 
-Suggested profile: `action:booking` (reservations are irreversible and need the user's approval first). A ready-to-copy skill is in [`integrations/k-skill/heyyumi-restaurant`](integrations/k-skill/heyyumi-restaurant).
+A ready-to-copy skill in the common `SKILL.md` format is in [`examples/agent-skill`](examples/agent-skill/SKILL.md). For Claude Code, copy it to `~/.claude/skills/heyyumi-restaurant/SKILL.md`; for other agents, adapt the same instructions to their skill or tool format. Treat `reserve` and `live` as actions that need the user's approval first, because they reach a real venue.
 
 ## Environment
 
