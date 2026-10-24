@@ -22,6 +22,26 @@ function pick(obj, key) {
   return undefined;
 }
 
+// A request sent outside the venue's request hours is held until reviewStartsAt, so waiting
+// now would only time out; the guest gets the answer by text or email.
+function withReserveNext(data) {
+  const id = pick(data, "reservationId") ?? pick(data, "id");
+  if (!id || !data || typeof data !== "object" || Array.isArray(data) || pick(data, "settled") === true) return data;
+  const reviewStartsAt = pick(data, "reviewStartsAt");
+  if (typeof reviewStartsAt === "string") {
+    return {
+      ...data,
+      cli: {
+        deferred: true,
+        reviewStartsAt,
+        next: `npx -y heyyumi reservation ${id}`,
+        note: "Request received outside the venue's request hours. The venue reviews it from reviewStartsAt and the guest gets the result by text or email. Do not wait now; check later with the next command.",
+      },
+    };
+  }
+  return { ...data, cli: { next: `npx -y heyyumi wait ${id}` } };
+}
+
 function requirePositional(positionals, name, example) {
   const v = positionals[0];
   if (!v) throw usageError(`Missing ${name}. Example: ${example}`);
@@ -188,12 +208,7 @@ const commands = {
     for (const [flag, key] of Object.entries(optional)) {
       if (typeof flags[flag] === "string") args[key] = flags[flag];
     }
-    const data = await tool("request_reservation", args);
-    const id = pick(data, "reservationId") ?? pick(data, "id");
-    if (id && data && typeof data === "object" && !Array.isArray(data) && pick(data, "settled") !== true) {
-      return { ...data, cli: { next: `npx -y heyyumi wait ${id}` } };
-    }
-    return data;
+    return withReserveNext(await tool("request_reservation", args));
   },
 
   async reservation({ positionals }) {
@@ -294,4 +309,4 @@ Exit codes: 0 ok · 1 server/tool error · 2 usage · 3 not signed in (run: npx 
 HEYYUMI_API_KEY=hmp_... skips sign-in and uses a dashboard key instead.
 `;
 
-module.exports = { commands, HELP, pick, checkOwnFlags };
+module.exports = { commands, HELP, pick, checkOwnFlags, withReserveNext };

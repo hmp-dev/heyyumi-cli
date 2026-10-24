@@ -73,6 +73,7 @@ npx -y heyyumi reserve <placeId> --time "2026-10-25 19:00" --party 2 --name "Kim
 ```
 
 4. Run the `cli.next` command from the output (`npx -y heyyumi wait <reservationId>`). The venue answers within 5 minutes. If `cli.settled` is `false`, run it again.
+   If the output has `cli.deferred: true`, the request was sent outside the venue's request hours (`yumiBooking.requestHours`). It is held, the venue reviews it from `cli.reviewStartsAt` (Korea time), and the guest gets the result by text or email. Tell the user that and don't wait now.
 5. Report the outcome:
    - `confirmed`: the table is booked
    - `cancelled`: the venue declined; relay `declineReason` if present
@@ -82,7 +83,7 @@ npx -y heyyumi reserve <placeId> --time "2026-10-25 19:00" --party 2 --name "Kim
 Reservation error codes:
 
 - `reservation_time_past`: the time has passed
-- `reservation_requests_closed`: this venue takes requests 11:00–21:00 KST; relay `retryAfter`
+- `reservation_requests_closed`: the venue isn't taking requests at this moment (see `yumiBooking.requestHours`); relay `retryAfter`
 - `venue_closed_at_requested_time`: the venue is closed then
 - `reservation_not_available`: this venue can't take requests
 

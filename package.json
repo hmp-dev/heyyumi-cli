@@ -1,7 +1,7 @@
 {
   "name": "heyyumi",
-  "version": "0.1.1",
-  "description": "Your AI finds and books real Korean restaurants, no Korean needed. 543,000+ verified venues; search, details and table requests as JSON for any agent.",
+  "version": "0.1.2",
+  "description": "Your AI finds and books real Korean restaurants, no Korean needed. 546,000+ verified venues; search, details and table requests as JSON for any agent.",
   "license": "MIT",
   "bin": {
     "heyyumi": "bin/heyyumi.js"

@@ -11,7 +11,7 @@ const { normalizeReservationTime } = require("../src/time");
 const { parseRpcBody, unwrapToolResult } = require("../src/mcp");
 const { writeCredentials, readCredentials, withCredentialsLock } = require("../src/credentials");
 const { checkArgs } = require("../src/schema");
-const { pick } = require("../src/commands");
+const { pick, withReserveNext } = require("../src/commands");
 
 test("parseArgs keeps bare flags as true and never eats the next --flag", () => {
   const { positionals, flags } = parseArgs(["냉면", "--parking", "--region", "을지로", "--page-size=3", "--", "--literal"]);
@@ -104,4 +104,18 @@ test("hand-built commands reject typo flags before any request", () => {
   assert.throws(() => checkOwnFlags("reserve", { time: "19:00", nme: "Kim" }), (e) => e.code === "unknown_option" && /--name/.test(e.message));
   assert.doesNotThrow(() => checkOwnFlags("reserve", { time: "19:00", party: "2", phone: "010", name: "Kim", pretty: true }));
   assert.doesNotThrow(() => checkOwnFlags("search", { anything: "x" }));
+});
+
+test("reserve points to wait now, or to a later check when the request is held overnight", () => {
+  const now = withReserveNext({ success: true, data: { reservationId: "r1", status: "pending" } });
+  assert.equal(now.cli.next, "npx -y heyyumi wait r1");
+  assert.equal(now.cli.deferred, undefined);
+
+  const held = withReserveNext({ success: true, data: { reservationId: "r2", status: "pending", reviewStartsAt: "2026-10-25T01:00:00.000Z" } });
+  assert.equal(held.cli.deferred, true);
+  assert.equal(held.cli.reviewStartsAt, "2026-10-25T01:00:00.000Z");
+  assert.equal(held.cli.next, "npx -y heyyumi reservation r2");
+
+  const settled = { success: true, data: { reservationId: "r3", settled: true } };
+  assert.equal(withReserveNext(settled), settled);
 });

@@ -6,7 +6,7 @@
 
 **Your AI finds and books real Korean restaurants, no Korean needed.**
 
-Ask your agent for *"bibimbap near Myeongdong"*, *"a place BTS's Jin goes to for naengmyeon"* or *"somewhere open for dinner in Hongdae where nobody minds that I don't speak Korean"*. HeyYumi answers from verified data on **543,000+ restaurants, cafes and bars across Korea**, and sends the table request to the restaurant itself. Within 5 minutes you know whether the table is yours.
+Ask your agent for *"bibimbap near Myeongdong"*, *"a place BTS's Jin goes to for naengmyeon"* or *"somewhere open for dinner in Hongdae where nobody minds that I don't speak Korean"*. HeyYumi answers from verified data on **546,000+ restaurants, cafes and bars across Korea**, and sends the table request to the restaurant itself. Within 5 minutes you know whether the table is yours.
 
 ```bash
 npx -y heyyumi login                          # once: Google sign-in in the browser, a key is made for you
@@ -18,7 +18,7 @@ Works with any agent that runs shell commands and reads JSON: Claude Code, Codex
 
 ## What your agent gets
 
-**Real data, cross-checked.** 367,000+ restaurants, 138,000+ cafes and 36,000+ bars. More than 424,000 of them are confirmed by more than one independent source, and every record carries a confidence score and a last-seen date. Menus, prices, opening hours, last orders and break times are included wherever they are known. Nothing is invented: there are no star ratings, and a missing field means "unknown", never "no".
+**Real data, cross-checked.** 371,000+ restaurants, 138,000+ cafes and 37,000+ bars. More than 432,000 of them are confirmed by more than one independent source, and every record carries a confidence score and a last-seen date. Menus, prices, opening hours, last orders and break times are included wherever they are known. Nothing is invented: there are no star ratings, and a missing field means "unknown", never "no".
 
 **Ask in your own language.** Dish names in English, romanized Korean, Japanese or Chinese are mapped to the Korean dish through an official government list of 800 Korean dishes and their foreign names. `bibimbap`, `ビビンバ` and `拌饭` all become 비빔밥. Places can be typed the same way: `Hongdae`, `Gangnam Station`, `Jeju Airport`.
 
@@ -59,7 +59,7 @@ $ npx -y heyyumi search bibimbap --region Myeongdong --page-size 3 --fields core
       "distanceM": 241,
       "placeUrl": "https://heyyumi.ai/en/places/8392850",
       "matchReason": "name",
-      "yumiBooking": { "canRequest": true, "requestHours": "11:00-21:00 KST" }
+      "yumiBooking": { "canRequest": true, "requestHours": "10:00-20:00 KST" }
     },
     {
       "name": "방이옥 종로점",
@@ -126,7 +126,7 @@ Flags may use dashes or underscores (`--page-size` = `--page_size`). Bare flags 
 
 ## Rules for agents
 
-- Only send `reserve` for venues whose result shows `yumiBooking.canRequest: true`. Confirm time, party size, name and phone with the user before sending; it reaches a real venue. Venues with `requestHours` take requests only in those hours (Korea time).
+- Only send `reserve` for venues whose result shows `yumiBooking.canRequest: true`. Confirm time, party size, name and phone with the user before sending; it reaches a real venue. Venues with `requestHours` review requests in those hours (Korea time). A request sent outside them comes back with `cli.deferred: true` and `cli.reviewStartsAt`: it is held, and the guest gets the answer by text or email, so don't wait for it now.
 - A request starts as `pending`. Say it is booked only after `wait` returns `status: "confirmed"`. `cancelled` means the venue declined (relay `declineReason` if present); `expired` means no answer in time.
 - `open_at` means the venue is open at that time, not that a table is free. Only a reservation answer says that.
 - There are no star ratings (`rating` is always null). Do not invent one, and do not attribute review counts to any map platform.
@@ -164,6 +164,6 @@ Not in a terminal? The same tools are available as an MCP server for ChatGPT, Cl
 
 **中文** · 不会韩语也没关系。这个 CLI 让 AI 助手在韩国 54 万多家经过核实的餐厅、咖啡馆和酒吧中搜索，并直接发送订位请求。可以用中文菜名搜索（例如“拌饭”），5 分钟内就能知道是否订位成功。
 
-**Español** · Tu IA encuentra y reserva restaurantes reales en Corea sin que sepas coreano: más de 543.000 locales verificados, búsqueda por nombre de plato en tu idioma y solicitudes de reserva con respuesta en 5 minutos.
+**Español** · Tu IA encuentra y reserva restaurantes reales en Corea sin que sepas coreano: más de 546.000 locales verificados, búsqueda por nombre de plato en tu idioma y solicitudes de reserva con respuesta en 5 minutos.
 
 MIT License · © 2026 Hide Me Please, Inc.
