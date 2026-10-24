@@ -59,7 +59,7 @@ $ npx -y heyyumi search bibimbap --region Myeongdong --page-size 3 --fields core
       "distanceM": 241,
       "placeUrl": "https://heyyumi.ai/en/places/8392850",
       "matchReason": "name",
-      "yumiBooking": { "canRequest": true, "requestHours": "10:00-20:00 KST" }
+      "yumiBooking": { "canRequest": true }
     },
     {
       "name": "방이옥 종로점",
@@ -109,9 +109,10 @@ npx -y heyyumi place <placeId> --fields all          # menu, hours, attributes, 
 | `photos ID` | The owner's photo URLs. |
 | `regions NAME` · `categories` · `stats` | Region lookup, category list, coverage numbers. |
 | `reserve ID --time --party --phone [--name --email --note --lang]` | Send a table request. Times without an offset are Korea time. `--email` is required for non-Korean phone numbers. |
-| `wait RESERVATION_ID [--timeout 110]` | Wait for the venue's answer (they have 5 minutes). Re-run if `cli.settled` is false. |
+| `wait RESERVATION_ID [--timeout 110]` | Wait for the venue's answer. Re-run if `cli.settled` is false. |
 | `reservation RESERVATION_ID` | Check a request once. |
 | `live ID --kind item\|wait\|seats --topic TEXT` · `live-wait QUERY_ID` | Ask the venue right now (stock, wait time, seats). |
+| `guide [search\|place\|reserve\|live]` | Rules for agents, served by HeyYumi and always current. |
 | `tools [TOOL]` · `call TOOL --json '{...}'` | Raw access to every HeyYumi MCP tool. |
 
 Flags may use dashes or underscores (`--page-size` = `--page_size`). Bare flags mean `true`.
@@ -119,30 +120,22 @@ Flags may use dashes or underscores (`--page-size` = `--page_size`). Bare flags 
 ## Output contract
 
 - stdout is always one JSON document: compact when piped, indented on a terminal or with `--pretty`. Progress and the sign-in URL go to stderr.
-- Errors: `{"ok": false, "error": {"code", "message", "next"?, "details"?}}`. Server codes are passed through (`reservation_time_past`, `reservation_requests_closed`, …).
+- Errors: `{"ok": false, "error": {"code", "message", "next"?, "details"?}}`. Server error codes and messages are passed through.
 - Exit codes: `0` ok · `1` server/tool error · `2` bad usage · `3` not signed in (run `npx -y heyyumi login`).
 - Unknown flags fail with `unknown_option` and a "did you mean" hint instead of being dropped, so a typo never turns into a silently wider search or a nameless booking. Search flags are checked against the live tool schema (cached for an hour), so new server filters work without a CLI update.
 - When a follow-up command is needed, the output carries `cli.next`, e.g. `npx -y heyyumi wait <id>`.
 
-## Rules for agents
-
-- Only send `reserve` for venues whose result shows `yumiBooking.canRequest: true`. Confirm time, party size, name and phone with the user before sending; it reaches a real venue. Venues with `requestHours` review requests in those hours (Korea time). A request sent outside them comes back with `cli.deferred: true` and `cli.reviewStartsAt`: it is held, and the guest gets the answer by text or email, so don't wait for it now.
-- A request starts as `pending`. Say it is booked only after `wait` returns `status: "confirmed"`. `cancelled` means the venue declined (relay `declineReason` if present); `expired` means no answer in time.
-- `open_at` means the venue is open at that time, not that a table is free. Only a reservation answer says that.
-- There are no star ratings (`rating` is always null). Do not invent one, and do not attribute review counts to any map platform.
-- `associated_with` results are reported visits with a news link, not endorsements. Say "reportedly visited by".
-- Link venue names to their `placeUrl`.
-
 ## Use it as an agent skill
 
-Any agent or skill system that can run a shell command can wrap this CLI:
+Any agent or skill system that can run a shell command can wrap this CLI. The usage rules come from the HeyYumi server, so a skill never goes out of date:
 
 ```bash
 npx -y heyyumi login --client-name "My Agent"   # returns at once if already signed in
-npx -y heyyumi search "<dish or venue>" --region "<area>" --page-size 5
+npx -y heyyumi guide                            # rules for agents, read once per task
+npx -y heyyumi guide reserve                    # before sending a table request
 ```
 
-A ready-to-copy skill in the common `SKILL.md` format is in [`examples/agent-skill`](https://github.com/hmp-dev/heyyumi-cli/blob/main/examples/agent-skill/SKILL.md). For Claude Code, copy it to `~/.claude/skills/heyyumi-restaurant/SKILL.md`; for other agents, adapt the same instructions to their skill or tool format. Treat `reserve` and `live` as actions that need the user's approval first, because they reach a real venue.
+A ready-to-copy skill in the common `SKILL.md` format is in [`examples/agent-skill`](https://github.com/hmp-dev/heyyumi-cli/blob/main/examples/agent-skill/SKILL.md). For Claude Code, copy it to `~/.claude/skills/heyyumi-restaurant/SKILL.md`; for other agents, point their skill at `npx -y heyyumi guide`. Treat `reserve` and `live` as actions that need the user's approval first, because they reach a real venue.
 
 Not in a terminal? The same tools are available as an MCP server for ChatGPT, Claude, Perplexity and Cursor: `https://mcp.heyyumi.ai/mcp` ([setup guide](https://heyyumi.ai/mcp)). Building a product? See the [REST API](https://heyyumi.ai/developers).
 

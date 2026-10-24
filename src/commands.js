@@ -1,7 +1,7 @@
 "use strict";
 
 const { flagsToToolArgs } = require("./args");
-const { callTool, listTools } = require("./mcp");
+const { callTool, listTools, rpc } = require("./mcp");
 const { login } = require("./oauth");
 const { readCredentials, removeCredentials } = require("./credentials");
 const { normalizeReservationTime } = require("./time");
@@ -22,8 +22,7 @@ function pick(obj, key) {
   return undefined;
 }
 
-// A request sent outside the venue's request hours is held until reviewStartsAt, so waiting
-// now would only time out; the guest gets the answer by text or email.
+// A held request is only reviewed from reviewStartsAt, so waiting now would just time out.
 function withReserveNext(data) {
   const id = pick(data, "reservationId") ?? pick(data, "id");
   if (!id || !data || typeof data !== "object" || Array.isArray(data) || pick(data, "settled") === true) return data;
@@ -35,7 +34,7 @@ function withReserveNext(data) {
         deferred: true,
         reviewStartsAt,
         next: `npx -y heyyumi reservation ${id}`,
-        note: "Request received outside the venue's request hours. The venue reviews it from reviewStartsAt and the guest gets the result by text or email. Do not wait now; check later with the next command.",
+        note: "The request is held for later. Pass on yumiNextStep and don't wait now.",
       },
     };
   }
@@ -81,6 +80,21 @@ function timeoutFlag(flags, fallback) {
   return n;
 }
 
+// The server's rules name MCP tools; agents run these CLI commands instead.
+const CLI_FOR_TOOL = {
+  search_places: "npx -y heyyumi search",
+  nearby_places: "npx -y heyyumi nearby",
+  get_place: "npx -y heyyumi place",
+  show_place_photos: "npx -y heyyumi photos",
+  resolve_regions: "npx -y heyyumi regions",
+  request_reservation: "npx -y heyyumi reserve",
+  wait_for_reservation: "npx -y heyyumi wait",
+  get_reservation: "npx -y heyyumi reservation",
+  request_live_status: "npx -y heyyumi live",
+  wait_for_live_status: "npx -y heyyumi live-wait",
+};
+const GUIDE_TOPICS = { search: "search_places", place: "get_place", reserve: "request_reservation", live: "request_live_status" };
+
 // Commands that build tool arguments by hand. Anything else they get is a typo, and a dropped
 // `--nme` would book under no name, so reject it. Commands not listed forward flags to the tool,
 // where validateArgs checks them against the live schema.
@@ -97,6 +111,7 @@ const OWN_FLAGS = {
   live: ["kind", "topic", "question"],
   "live-wait": ["timeout"],
   tools: [],
+  guide: [],
   version: [],
 };
 const OUTPUT_FLAGS = ["pretty", "compact", "help"];
@@ -270,6 +285,29 @@ const commands = {
     return tool(name, args);
   },
 
+  async guide({ positionals }) {
+    const topic = positionals[0];
+    if (topic !== undefined) {
+      const toolName = GUIDE_TOPICS[topic];
+      if (!toolName) throw usageError(`Unknown guide topic "${topic}". Topics: ${Object.keys(GUIDE_TOPICS).join(", ")}`);
+      const t = (await listTools()).find((x) => x.name === toolName);
+      if (!t) throw new CliError("tool_not_found", `The server has no ${toolName} tool right now.`);
+      return { ok: true, topic, command: CLI_FOR_TOOL[toolName], rules: t.description };
+    }
+    const init = await rpc("initialize", {
+      protocolVersion: "2025-06-18",
+      capabilities: {},
+      clientInfo: { name: "heyyumi-cli", version },
+    });
+    return {
+      ok: true,
+      instructions: init?.instructions || "",
+      commands: CLI_FOR_TOOL,
+      topics: Object.fromEntries(Object.keys(GUIDE_TOPICS).map((k) => [k, `npx -y heyyumi guide ${k}`])),
+      note: "These rules come from the HeyYumi server and stay current. They name MCP tools; run the matching command from `commands` (reserve takes --time --party --phone --name --email --note --lang). Read `guide reserve` before sending a table request and `guide live` before asking a venue.",
+    };
+  },
+
   async version() {
     return { ok: true, version };
   },
@@ -281,6 +319,10 @@ Sign in (once per machine; opens Google sign-in, finishes on its own):
   heyyumi login [--no-browser] [--client-name NAME] [--timeout 300] [--force]
   heyyumi status | logout
 
+Rules for agents (from the server, always current):
+  heyyumi guide                                   read once per task
+  heyyumi guide search|place|reserve|live         rules for one step
+
 Search & details:
   heyyumi search [KEYWORD] --region 을지로 [--subtype korean_bbq] [--open_at "2026-10-25 19:00"] [--parking] ...
       Any search_places filter works as a flag (see: heyyumi tools search_places). 10 results unless --page-size.
@@ -290,7 +332,7 @@ Search & details:
   heyyumi photos PLACE_ID
   heyyumi regions NAME | categories | stats
 
-Table requests (only where a result shows yumiBooking.canRequest=true; ask the user before sending):
+Table requests (read "heyyumi guide reserve" first; ask the user before sending):
   heyyumi reserve PLACE_ID --time "2026-10-25 19:00" --party 2 --phone 010-1234-5678 [--name NAME]
                   [--email EMAIL (required for non-Korean phones)] [--note TEXT] [--lang en]
   heyyumi wait RESERVATION_ID [--timeout 110]     waits until confirmed / cancelled / expired (venue has 5 min)

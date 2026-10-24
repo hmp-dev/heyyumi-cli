@@ -11,7 +11,7 @@ const { normalizeReservationTime } = require("../src/time");
 const { parseRpcBody, unwrapToolResult } = require("../src/mcp");
 const { writeCredentials, readCredentials, withCredentialsLock } = require("../src/credentials");
 const { checkArgs } = require("../src/schema");
-const { pick, withReserveNext } = require("../src/commands");
+const { pick, withReserveNext, commands } = require("../src/commands");
 
 test("parseArgs keeps bare flags as true and never eats the next --flag", () => {
   const { positionals, flags } = parseArgs(["냉면", "--parking", "--region", "을지로", "--page-size=3", "--", "--literal"]);
@@ -118,4 +118,8 @@ test("reserve points to wait now, or to a later check when the request is held o
 
   const settled = { success: true, data: { reservationId: "r3", settled: true } };
   assert.equal(withReserveNext(settled), settled);
+});
+
+test("guide rejects an unknown topic before calling the server", async () => {
+  await assert.rejects(commands.guide({ positionals: ["menu"], flags: {} }), (e) => e.code === "usage" && /reserve/.test(e.message));
 });
