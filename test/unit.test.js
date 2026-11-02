@@ -11,7 +11,7 @@ const { normalizeReservationTime } = require("../src/time");
 const { parseRpcBody, unwrapToolResult } = require("../src/mcp");
 const { writeCredentials, readCredentials, withCredentialsLock } = require("../src/credentials");
 const { checkArgs } = require("../src/schema");
-const { pick, withReserveNext, commands } = require("../src/commands");
+const { pick, withReserveNext, commands, photosResult } = require("../src/commands");
 
 test("parseArgs keeps bare flags as true and never eats the next --flag", () => {
   const { positionals, flags } = parseArgs(["냉면", "--parking", "--region", "을지로", "--page-size=3", "--", "--literal"]);
@@ -122,4 +122,15 @@ test("reserve points to wait now, or to a later check when the request is held o
 
 test("guide rejects an unknown topic before calling the server", async () => {
   await assert.rejects(commands.guide({ positionals: ["menu"], flags: {} }), (e) => e.code === "usage" && /reserve/.test(e.message));
+});
+
+test("photos keeps the server JSON (credit, ambassadorPosts, note) and drops thumbnail placeholders", () => {
+  const json = { count: 1, photos: [{ n: 1, url: "https://sb/0.jpg", credit: "@x (Instagram)", postUrl: "https://www.instagram.com/reel/A/" }], note: "server note" };
+  const out = photosResult([json, { type: "image", mimeType: "image/jpeg", omitted: "base64 image omitted in CLI output" }]);
+  assert.equal(out.count, 1);
+  assert.equal(out.photos[0].credit, "@x (Instagram)");
+  assert.equal(out.note, "server note");
+  assert.match(out.cli.note, /credit/);
+  const none = photosResult({ count: 0, ambassadorPosts: [{ credit: "@x (Instagram)", url: "https://www.instagram.com/reel/A/" }], note: "n" });
+  assert.equal(none.ambassadorPosts.length, 1);
 });

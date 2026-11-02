@@ -106,7 +106,7 @@ npx -y heyyumi place <placeId> --fields all          # menu, hours, attributes, 
 | `search [KEYWORD] --region NAME [filters]` | Shortlist venues. `--region` takes Korean or romanized names, stations and landmarks (`Hongdae`, `강남역`, `제주공항`). Every `search_places` filter works as a flag (see `heyyumi tools search_places`). Returns 10 venues unless `--page-size` is given. |
 | `nearby --lat --lng [--radius] [--sort distance\|discovery]` | Venues around a point. |
 | `place ID [--fields all]` | Full details for one venue. |
-| `photos ID` | The owner's photo URLs. |
+| `photos ID` | Photo URLs: the owner's, plus food photos and videos from credited creators (with their @handle and post link). |
 | `regions NAME` · `categories` · `stats` | Region lookup, category list, coverage numbers. |
 | `reserve ID --time --party --phone [--name --email --note --lang]` | Send a table request. Times without an offset are Korea time. `--email` is required for non-Korean phone numbers. |
 | `wait RESERVATION_ID [--timeout 110]` | Wait for the venue's answer. Re-run if `cli.settled` is false. |

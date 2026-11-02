@@ -93,7 +93,28 @@ const CLI_FOR_TOOL = {
   request_live_status: "npx -y heyyumi live",
   wait_for_live_status: "npx -y heyyumi live-wait",
 };
-const GUIDE_TOPICS = { search: "search_places", place: "get_place", reserve: "request_reservation", live: "request_live_status" };
+const GUIDE_TOPICS = {
+  search: "search_places",
+  place: "get_place",
+  photos: "show_place_photos",
+  reserve: "request_reservation",
+  live: "request_live_status",
+};
+
+/**
+ * show_place_photos answers with one JSON block plus base64 thumbnails. A terminal agent gets the JSON
+ * (full-size urls, credit, postUrl, videoUrl, ambassadorPosts, the server note) and no thumbnails.
+ */
+function photosResult(data) {
+  const parts = Array.isArray(data) ? data : [data];
+  const json = parts.find((p) => p && typeof p === "object" && p.type !== "image") || {};
+  return {
+    ...json,
+    cli: {
+      note: "Thumbnails are left out of CLI output. Show each photo `url` as a link; for items with `credit`, put the credit next to the photo and link `postUrl`.",
+    },
+  };
+}
 
 // Commands that build tool arguments by hand. Anything else they get is a typo, and a dropped
 // `--nme` would book under no name, so reject it. Commands not listed forward flags to the tool,
@@ -102,7 +123,7 @@ const OWN_FLAGS = {
   login: ["client-name", "no-browser", "timeout", "force"],
   logout: [],
   status: [],
-  photos: [],
+  photos: ["category", "limit"],
   categories: [],
   stats: [],
   reserve: ["time", "party", "phone", "name", "email", "note", "lang", "idempotency-key"],
@@ -186,10 +207,17 @@ const commands = {
     return tool("get_place", { id, ...flagsToToolArgs(flags) });
   },
 
-  // Photo URLs via get_place; the photo tool returns base64 thumbnails, which do not belong in a terminal.
-  async photos({ positionals }) {
+  // The photo tool also lists ambassador photos with their credit, and says what to do when there are none.
+  async photos({ positionals, flags }) {
     const id = requirePositional(positionals, "place id", "heyyumi photos 21853004");
-    return tool("get_place", { id, fields: "photos" });
+    const args = { id };
+    if (flags.category !== undefined) args.category = String(flags.category);
+    if (flags.limit !== undefined) {
+      const n = Number(flags.limit);
+      if (!Number.isInteger(n) || n < 1) throw usageError("--limit must be a whole number, e.g. --limit 6");
+      args.limit = n;
+    }
+    return photosResult(await tool("show_place_photos", args));
   },
 
   async regions({ positionals, flags }) {
@@ -304,7 +332,7 @@ const commands = {
       instructions: init?.instructions || "",
       commands: CLI_FOR_TOOL,
       topics: Object.fromEntries(Object.keys(GUIDE_TOPICS).map((k) => [k, `npx -y heyyumi guide ${k}`])),
-      note: "These rules come from the HeyYumi server and stay current. They name MCP tools; run the matching command from `commands` (reserve takes --time --party --phone --name --email --note --lang). Read `guide reserve` before sending a table request and `guide live` before asking a venue.",
+      note: "These rules come from the HeyYumi server and stay current. They name MCP tools; run the matching command from `commands` (reserve takes --time --party --phone --name --email --note --lang; photos takes --category --limit). Read `guide reserve` before sending a table request and `guide live` before asking a venue.",
     };
   },
 
@@ -321,7 +349,7 @@ Sign in (once per machine; opens Google sign-in, finishes on its own):
 
 Rules for agents (from the server, always current):
   heyyumi guide                                   read once per task
-  heyyumi guide search|place|reserve|live         rules for one step
+  heyyumi guide search|place|photos|reserve|live  rules for one step
 
 Search & details:
   heyyumi search [KEYWORD] --region 을지로 [--subtype korean_bbq] [--open_at "2026-10-25 19:00"] [--parking] ...
@@ -329,7 +357,7 @@ Search & details:
       --region takes Korean or romanized names, stations and landmarks (Hongdae, 강남역, 제주공항).
   heyyumi nearby --lat 37.5665 --lng 126.978 [--radius 800] [--sort discovery]
   heyyumi place PLACE_ID [--fields all]
-  heyyumi photos PLACE_ID
+  heyyumi photos PLACE_ID [--limit 6] [--category interior]
   heyyumi regions NAME | categories | stats
 
 Table requests (read "heyyumi guide reserve" first; ask the user before sending):
@@ -351,4 +379,4 @@ Exit codes: 0 ok · 1 server/tool error · 2 usage · 3 not signed in (run: npx 
 HEYYUMI_API_KEY=hmp_... skips sign-in and uses a dashboard key instead.
 `;
 
-module.exports = { commands, HELP, pick, checkOwnFlags, withReserveNext };
+module.exports = { commands, HELP, pick, checkOwnFlags, withReserveNext, photosResult };
