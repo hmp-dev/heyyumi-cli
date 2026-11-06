@@ -1,12 +1,12 @@
 ---
 name: heyyumi-restaurant
-description: Find Korean restaurants, cafes, bakeries and bars and send table requests with the HeyYumi CLI. Use when the user wants a place to eat or drink in Korea (by area, station, landmark, dish, opening time, parking, dietary needs), details on a venue, a reservation, or a live question to the venue such as the current wait. Works for questions in any language, e.g. "점심 뭐 먹지", "회식 장소 추천해 줘", "dinner near Hongdae for 4", "明洞でランチ".
+description: Find Korean restaurants, cafes, bakeries and bars, and hair salons, nail, lash and waxing shops and skin care, and send reservation requests with the HeyYumi CLI. Use when the user wants a place to eat or drink in Korea (by area, station, landmark, dish, opening time, parking, dietary needs), a haircut, nails, lashes, waxing or skin care, details on a venue, a reservation, or a live question to the venue such as the current wait. Works for questions in any language, e.g. "점심 뭐 먹지", "회식 장소 추천해 줘", "머리 자르러 갈까", "dinner near Hongdae for 4", "明洞でランチ".
 license: MIT
 ---
 
 # HeyYumi Restaurant
 
-This skill uses the [`heyyumi`](https://www.npmjs.com/package/heyyumi) CLI to search verified restaurants, cafes, bakeries and bars across Korea and to send table requests.
+This skill uses the [`heyyumi`](https://www.npmjs.com/package/heyyumi) CLI to search verified restaurants, cafes, bakeries and bars, and beauty venues, across Korea and to send reservation requests. For hair, nails, lashes, waxing or skin care pass `--business_category` (`salon`, `nail`, `lash`, `waxing`, `esthetic`, or `beauty` for all of them); without it a search returns only food and drink places.
 
 ## Start here
 

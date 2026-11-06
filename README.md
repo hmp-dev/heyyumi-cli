@@ -6,11 +6,12 @@
 
 **Your AI finds and books real Korean restaurants, no Korean needed.**
 
-Ask your agent for *"bibimbap near Myeongdong"*, *"a place BTS's Jin goes to for naengmyeon"* or *"somewhere open for dinner in Hongdae where nobody minds that I don't speak Korean"*. HeyYumi answers from verified data on **546,000+ restaurants, cafes and bars across Korea**, and sends the table request to the restaurant itself. Within 5 minutes you know whether the table is yours.
+Ask your agent for *"bibimbap near Myeongdong"*, *"a place BTS's Jin goes to for naengmyeon"* or *"somewhere open for dinner in Hongdae where nobody minds that I don't speak Korean"*. HeyYumi answers from verified data on **546,000+ restaurants, cafes and bars across Korea**, and sends the table request to the restaurant itself. Within 5 minutes you know whether the table is yours. It finds hair salons, nail, lash and waxing shops and skin care the same way: *"my hair has gotten long, should I get a cut today?"*
 
 ```bash
 npx -y heyyumi login                          # once: Google sign-in in the browser, a key is made for you
 npx -y heyyumi search bibimbap --region Myeongdong
+npx -y heyyumi search --region Seongsu --business_category salon   # hair salons; beauty = every beauty kind
 npx -y heyyumi reserve <placeId> --time "2026-10-25 19:00" --party 2 --phone +1-415-555-0100 --email you@example.com
 ```
 

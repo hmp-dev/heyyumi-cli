@@ -355,6 +355,8 @@ Search & details:
   heyyumi search [KEYWORD] --region 을지로 [--subtype korean_bbq] [--open_at "2026-10-25 19:00"] [--parking] ...
       Any search_places filter works as a flag (see: heyyumi tools search_places). 10 results unless --page-size.
       --region takes Korean or romanized names, stations and landmarks (Hongdae, 강남역, 제주공항).
+      Hair, nails, lashes, waxing, skin care: add --business_category salon|nail|lash|waxing|esthetic|beauty.
+      Each search returns one kind only; without it you get restaurants, cafes and bars.
   heyyumi nearby --lat 37.5665 --lng 126.978 [--radius 800] [--sort discovery]
   heyyumi place PLACE_ID [--fields all]
   heyyumi photos PLACE_ID [--limit 6] [--category interior]
