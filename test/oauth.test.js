@@ -14,6 +14,7 @@ delete process.env.HEYYUMI_API_KEY;
 
 const { login, getAccessToken } = require("../src/oauth");
 const { readCredentials, writeCredentials } = require("../src/credentials");
+const { detachedLogin } = require("../src/detach");
 
 /** Minimal stand-in for heyyumi.ai's OAuth endpoints, with PKCE and refresh rotation. */
 function fakeIssuer() {
@@ -78,6 +79,31 @@ test("login completes through the loopback redirect with PKCE and saves credenti
     assert.equal(saved.refreshToken, "r1");
     assert.equal(saved.clientName, "My Agent");
   } finally {
+    server.close();
+  }
+});
+
+test("login --detach returns the link at once and the background process saves the sign-in", async () => {
+  const { server, issuer } = await fakeIssuer();
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "heyyumi-detach-"));
+  const prev = { issuer: process.env.HEYYUMI_ISSUER, config: process.env.HEYYUMI_CONFIG_DIR };
+  process.env.HEYYUMI_ISSUER = issuer;
+  process.env.HEYYUMI_CONFIG_DIR = dir;
+  try {
+    const out = await detachedLogin({ clientName: "Detach Test", timeoutSec: 30 });
+    assert.equal(out.pending, true);
+    assert.ok(out.url.startsWith(`${issuer}/oauth/authorize?`));
+    await fetch(out.url).catch(() => {});
+    const file = path.join(dir, "credentials.json");
+    for (let i = 0; i < 100 && !fs.existsSync(file); i++) await new Promise((r) => setTimeout(r, 100));
+    const saved = readCredentials(file);
+    assert.equal(saved.refreshToken, "r1");
+    assert.equal(saved.clientName, "Detach Test");
+  } finally {
+    process.env.HEYYUMI_ISSUER = prev.issuer ?? "";
+    if (prev.issuer === undefined) delete process.env.HEYYUMI_ISSUER;
+    process.env.HEYYUMI_CONFIG_DIR = prev.config;
+    fs.rmSync(dir, { recursive: true, force: true });
     server.close();
   }
 });

@@ -3,6 +3,7 @@
 const { flagsToToolArgs } = require("./args");
 const { callTool, listTools, rpc } = require("./mcp");
 const { login } = require("./oauth");
+const { detachedLogin } = require("./detach");
 const { readCredentials, removeCredentials } = require("./credentials");
 const { normalizeReservationTime } = require("./time");
 const { credentialsPath, DEFAULT_CLIENT_NAME, MCP_URL, version } = require("./config");
@@ -120,7 +121,7 @@ function photosResult(data) {
 // `--nme` would book under no name, so reject it. Commands not listed forward flags to the tool,
 // where validateArgs checks them against the live schema.
 const OWN_FLAGS = {
-  login: ["client-name", "no-browser", "timeout", "force"],
+  login: ["client-name", "no-browser", "detach", "timeout", "force"],
   logout: [],
   status: [],
   photos: ["category", "limit"],
@@ -156,6 +157,9 @@ const commands = {
       return { ok: true, alreadySignedIn: true, clientName: existing.clientName, note: "Already signed in. Use --force to sign in again." };
     }
     const clientName = typeof flags["client-name"] === "string" ? flags["client-name"] : process.env.HEYYUMI_CLIENT_NAME || DEFAULT_CLIENT_NAME;
+    if (flags.detach === true) {
+      return detachedLogin({ clientName, timeoutSec: timeoutFlag(flags, 300), force: flags.force === true });
+    }
     const creds = await login({
       clientName,
       noBrowser: flags["no-browser"] === true,
@@ -345,6 +349,7 @@ const HELP = `heyyumi ${version} — Korean restaurant search & table requests f
 
 Sign in (once per machine; opens Google sign-in, finishes on its own):
   heyyumi login [--no-browser] [--client-name NAME] [--timeout 300] [--force]
+  heyyumi login --detach    for agents: prints the sign-in url and returns; sign-in finishes in the background
   heyyumi status | logout
 
 Rules for agents (from the server, always current):

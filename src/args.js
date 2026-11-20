@@ -46,6 +46,7 @@ const CLI_FLAGS = new Set([
   "json",
   "timeout",
   "no-browser",
+  "detach",
   "client-name",
   "force",
 ]);

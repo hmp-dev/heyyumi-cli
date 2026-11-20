@@ -97,6 +97,7 @@ npx -y heyyumi place <placeId> --fields all          # menu, hours, attributes, 
 - Each sign-in gets its own HeyYumi key on the user's account, so usage is metered per user.
 - Credentials are saved to `~/.config/heyyumi/credentials.json` (mode 0600; `%APPDATA%\heyyumi` on Windows). Access tokens refresh on their own; refresh is locked across processes so parallel agent commands never sign the user out.
 - `heyyumi status` shows whether you are signed in (never prints tokens). `heyyumi logout` removes local credentials. Keys can be revoked any time at <https://heyyumi.ai/dashboard>.
+- `--detach` is for agents that must hand the link to a person: it prints `{"pending":true,"url":...}` and returns at once, while a background process waits up to 5 minutes for the sign-in. Many agent shells kill what a command left running (`&`, `nohup`), so a plain background `login` would die before the person opens the link. Check with `heyyumi status` afterwards.
 - `--no-browser` prints the URL instead of opening it. `--client-name NAME` labels the connection (it shows up as the source of reservation requests, e.g. `--client-name "My Agent"`).
 - Already have a dashboard key? Set `HEYYUMI_API_KEY=hmp_...` and skip `login`.
 
