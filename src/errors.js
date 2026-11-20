@@ -23,7 +23,7 @@ function usageError(message) {
 }
 
 function loginRequired(message = "Not signed in to HeyYumi.") {
-  return new CliError("login_required", message, { exitCode: 3, next: "npx -y heyyumi login" });
+  return new CliError("login_required", message, { exitCode: 3, next: "npx -y heyyumi login --detach" });
 }
 
 module.exports = { CliError, usageError, loginRequired };

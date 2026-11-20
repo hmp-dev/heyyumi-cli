@@ -1,6 +1,6 @@
 {
   "name": "heyyumi",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Your AI finds and books real Korean restaurants and hair & nail salons, no Korean needed. 546,000+ verified venues; search, details and reservation requests as JSON for any agent.",
   "license": "MIT",
   "bin": {

@@ -149,7 +149,7 @@ async function login({
     settle.reject(
       new CliError("login_timeout", `No sign-in within ${Math.round(timeoutMs / 1000)}s.`, {
         exitCode: 3,
-        next: "npx -y heyyumi login",
+        next: "npx -y heyyumi login --detach",
       }),
     );
   }, timeoutMs);

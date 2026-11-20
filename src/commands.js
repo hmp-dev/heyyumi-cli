@@ -180,7 +180,7 @@ const commands = {
   async status() {
     if (process.env.HEYYUMI_API_KEY) return { ok: true, signedIn: true, mode: "api_key", mcpUrl: MCP_URL };
     const c = readCredentials();
-    if (!c?.refreshToken) return { ok: true, signedIn: false, next: "npx -y heyyumi login" };
+    if (!c?.refreshToken) return { ok: true, signedIn: false, next: "npx -y heyyumi login --detach" };
     return {
       ok: true,
       signedIn: true,
@@ -382,7 +382,7 @@ Raw MCP access:
   heyyumi call TOOL [--json '{...}'] [--flag value]
 
 Output is JSON on stdout (compact when piped, --pretty to indent); progress goes to stderr.
-Exit codes: 0 ok · 1 server/tool error · 2 usage · 3 not signed in (run: npx -y heyyumi login)
+Exit codes: 0 ok · 1 server/tool error · 2 usage · 3 not signed in (run: npx -y heyyumi login --detach)
 HEYYUMI_API_KEY=hmp_... skips sign-in and uses a dashboard key instead.
 `;
 
